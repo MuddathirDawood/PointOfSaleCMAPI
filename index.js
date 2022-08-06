@@ -5,7 +5,6 @@ require('dotenv').config();
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { query } = require('express');
 
 const app = express();
 app.use(express.static('view'))
@@ -25,6 +24,8 @@ app.get('/',(req, res)=>{
     res.sendFile(__dirname + "/view/endpoints.html")
 })
 
+
+/* /////////////////////////////////////////////////////////////////// PRODUCTS //////////////////////////////////////////////////////////////// */
 // DISPLAY ALL PRODUCTS
 router.get('/products', (req, res)=>{
     const productsQ = `
@@ -36,6 +37,21 @@ router.get('/products', (req, res)=>{
         res.json({
             status: 200,
             products: results
+        })
+    })
+})
+
+// DISPLAY SINGLE PRODUCT
+router.get('/products/:id', (req, res)=>{
+    const singleProdQ = `
+        SELECT * FROM products WHERE product_id = ${req.params.id}
+    ` 
+
+    db.query(singleProdQ, (err, results)=>{
+        if (err) throw err
+        res.json({
+            status: 200,
+            product: results
         })
     })
 })
@@ -54,6 +70,20 @@ router.post('/products', bodyParser.json(), (req, res)=>{
     })
 })
 
+// DELETE PRODUCT
+router.delete('/products/:id', (req, res)=>{
+    const deleteUserQ = `
+        DELETE FROM products WHERE product_id = ${req.params.id};
+        ALTER TABLE products AUTO_INCREMENT = 1;
+    `
+
+    db.query(deleteUserQ, (err, results)=>{
+        if (err) throw err
+        res.send('Product Deleted')
+    })
+})
+
+/* /////////////////////////////////////////////////////////////////// USERS //////////////////////////////////////////////////////////////// */
 // REGISTER USER
 router.post('/users', bodyParser.json(), async(req, res)=>{
     const emailQ = `
@@ -126,5 +156,48 @@ router.patch('/users', bodyParser.json(), (req, res)=>{
             }
             
         }
+    })
+})
+
+// GET ALL USERS
+router.get('/users', (req, res)=>{
+    const allUsersQ = `
+        SELECT * FROM users
+    `
+
+    db.query(allUsersQ, (err, results)=>{
+        if (err) throw err
+        res.json({
+            status: 200,
+            users: results
+        })
+    })
+})
+
+// GET SINGLE USER
+router.get('/users/:id', (req, res)=>{
+    const singleUserQ = `
+        SELECT * FROM users WHERE user_id = ${req.params.id}
+    `
+
+    db.query(singleUserQ, (err, results)=>{
+        if (err) throw err
+        res.json({
+            status: 200,
+            user: results
+        })
+    })
+})
+
+// DELETE USER
+router.delete('/users/:id', (req, res)=>{
+    const deleteUserQ = `
+        DELETE FROM users WHERE user_id = ${req.params.id};
+        ALTER TABLE users AUTO_INCREMENT = 1;
+    `
+
+    db.query(deleteUserQ, (err, results)=>{
+        if (err) throw err
+        res.send('User Deleted')
     })
 })
