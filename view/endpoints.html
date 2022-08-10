@@ -5,15 +5,33 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        body{
+            display: flex;
+            flex-flow: column wrap;
+            align-items: center;
+            min-width: 99vw;
+            background: #f2f2f2;
+            color: #0291e4;
+        }
+
         ul{
             list-style: none;
-            font-size: 1.15em;
+            font-size: 1.17em;
+            padding: 0;
         }
+
         li{
             display: flex;
-            width: 275px;
+            width: 325px;
             margin: 2.5px 2.5px 2.5px 2.5px;
             justify-content: space-between;
+            border-bottom: 1px solid black;
+        }
+
+        h1{
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            padding: 15px 0 15px 0;
         }
     </style>
     <title>All Endpoints</title>

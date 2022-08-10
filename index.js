@@ -27,7 +27,7 @@ app.get('/',(req, res)=>{
 })
 
 
-/* /////////////////////////////////////////////////////////////////// PRODUCTS //////////////////////////////////////////////////////////////// */
+/* ----------------------------------------------------------------- PRODUCTS ------------------------------------------------------------------ */
 // DISPLAY ALL PRODUCTS
 router.get('/products', (req, res)=>{
     const productsQ = `
@@ -102,9 +102,10 @@ router.put('/products/:id', bodyParser.json(), (req, res)=>{
     })
 })
 
-/* /////////////////////////////////////////////////////////////////// USERS //////////////////////////////////////////////////////////////// */
+/* ---------------------------------------------------------------- USERS ---------------------------------------------------------------------- */
 // REGISTER USER
 router.post('/users', bodyParser.json(), async(req, res)=>{
+    let bd = req.body
     const emailQ = `
         SELECT email FROM users WHERE ?
     `
@@ -120,6 +121,11 @@ router.post('/users', bodyParser.json(), async(req, res)=>{
         } else {
             let generateSalt = await bcrypt.genSalt()
             req.body.password = await bcrypt.hash(req.body.password, generateSalt)
+            let date = {
+                date: new Date().toLocaleDateString(),
+              };
+            bd.join_date = date.date;  
+
             const registerQ = `
                 INSERT INTO users(user_fullname, email, password, phone_number, join_date)
                 VALUES(?, ?, ?, ?, ?)
@@ -239,7 +245,8 @@ router.put('/users/:id', bodyParser.json(), (req, res)=>{
 
 })
 
-/* /////////////////////////////////////////////////////////////////// CART ////////////////////////////////////////////////////////////////// */
+/* ---------------------------------------------------------------- CART ----------------------------------------------------------------------- */
+// GET CART PRODUCTS
 router.get('/users/:id/cart', (req, res)=>{
     const cartQ = `
         SELECT cart FROM users 
@@ -255,6 +262,8 @@ router.get('/users/:id/cart', (req, res)=>{
     })
 })
 
+
+// ADD PRODUCT TO CART
 router.post('/users/:id/cart', bodyParser.json(),(req, res)=>{
     let bd = req.body
     const cartQ = `
@@ -299,6 +308,36 @@ router.post('/users/:id/cart', bodyParser.json(),(req, res)=>{
                 status: 404,
                 results: 'There is no user with that id'
             })
+        }
+    })
+})
+
+// DELETE CART
+router.delete('/users/:id/cart', (req,res)=>{
+    const delCart = `
+        SELECT cart FROM users 
+        WHERE user_id = ${req.params.id}
+    `
+    db.query(delCart, (err,results)=>{
+        if(err) throw err;
+        if(results.length >0){
+            const query = `
+                UPDATE users 
+                SET cart = null 
+                WHERE user_id = ${req.params.id}
+            `
+            db.query(query,(err,results)=>{
+                if(err) throw err
+                res.json({
+                    status:200,
+                    results: `Successfully cleared the cart`
+                })
+            });
+        }else{
+            res.json({
+                status:400,
+                result: `There is no user with that ID`
+            });
         }
     })
 })
