@@ -12,6 +12,7 @@ app.use((req, res, next)=>{
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Access-Control-Allow-Methods', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
 
@@ -257,7 +258,7 @@ router.get('/users/:id/cart', (req, res)=>{
         if (err) throw err
         res.json({
             status: 200,
-            cart: results
+            cart: JSON.parse(results[0].cart)
         })
     })
 })
@@ -281,7 +282,7 @@ router.post('/users/:id/cart', bodyParser.json(),(req, res)=>{
                 cart = JSON.parse(results[0].cart)
             }
             let product = {
-                "product_id" : cart.length + 1,
+                "cart_id" : cart.length + 1,
                 "title" : bd.title,
                 "category" : bd.category,
                 "description" : bd.description,
@@ -300,7 +301,7 @@ router.post('/users/:id/cart', bodyParser.json(),(req, res)=>{
                 if (err) throw err
                 res.json({
                     status: 200,
-                    results: 'Product successfully added onto cart'
+                    results: 'Product successfully added into cart'
                 })
             })
         } else {
