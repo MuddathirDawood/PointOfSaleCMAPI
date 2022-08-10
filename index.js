@@ -10,6 +10,8 @@ const app = express();
 app.use(express.static('view'))
 app.use((req, res, next)=>{
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Methods', '*');
     next();
 });
 
@@ -72,14 +74,31 @@ router.post('/products', bodyParser.json(), (req, res)=>{
 
 // DELETE PRODUCT
 router.delete('/products/:id', (req, res)=>{
-    const deleteUserQ = `
+    const deleteProdQ = `
         DELETE FROM products WHERE product_id = ${req.params.id};
         ALTER TABLE products AUTO_INCREMENT = 1;
     `
 
-    db.query(deleteUserQ, (err, results)=>{
+    db.query(deleteProdQ, (err, results)=>{
         if (err) throw err
         res.send('Product Deleted')
+    })
+})
+
+// EDIT PRODUCT
+router.put('/products/:id', bodyParser.json(), (req, res)=>{
+    const editProdQ = `
+        UPDATE products
+        SET title = ?, category = ?, description = ?, image = ?, price = ?
+        WHERE product_id = ${req.params.id}
+    `
+
+    db.query(editProdQ, [req.body.title, req.body.category, req.body.description, req.body.image, req.body.price], (err, results)=>{
+        if (err) throw err
+        res.json({
+            status: 200,
+            results: 'The product has been edited succesfully'
+        })
     })
 })
 
@@ -199,5 +218,87 @@ router.delete('/users/:id', (req, res)=>{
     db.query(deleteUserQ, (err, results)=>{
         if (err) throw err
         res.send('User Deleted')
+    })
+})
+
+// EDIT USER
+router.put('/users/:id', bodyParser.json(), (req, res)=>{
+    const editUserQ = `
+        UPDATE users
+        SET user_fullname = ?, email = ?, phone_number = ?
+        WHERE user_id = ${req.params.id}
+    `
+
+    db.query(editUserQ, [req.body.user_fullname, req.body.email, req.body.phone_number], (err, results)=>{
+        if (err) throw err
+        res.json({
+            status: 200,
+            results: 'The user has been edited successfully'
+        })
+    })
+
+})
+
+/* /////////////////////////////////////////////////////////////////// CART ////////////////////////////////////////////////////////////////// */
+router.get('/users/:id/cart', (req, res)=>{
+    const cartQ = `
+        SELECT cart FROM users 
+        WHERE user_id = ${req.params.id}
+    `
+
+    db.query(cartQ, (err, results)=>{
+        if (err) throw err
+        res.json({
+            status: 200,
+            cart: results
+        })
+    })
+})
+
+router.post('/users/:id/cart', bodyParser.json(),(req, res)=>{
+    let bd = req.body
+    const cartQ = `
+        SELECT cart FROM users 
+        WHERE user_id = ${req.params.id}
+    `
+
+    db.query(cartQ, (err, results)=>{
+        if (err) throw err
+        if (results.length > 0) {
+            let cart;
+            if (results[0].cart == null) {
+                cart = []
+            } else {
+                cart = JSON.parse(results[0].cart)
+            }
+            let product = {
+                "product_id" : cart.length + 1,
+                "title" : bd.title,
+                "category" : bd.category,
+                "description" : bd.description,
+                "image" : bd.image,
+                "price" : bd.price,
+                "created_by" : bd.created_by
+            }
+            cart.push(product);
+            const query = `
+                UPDATE users
+                SET cart = ?
+                WHERE user_id = ${req.params.id}
+            `
+
+            db.query(query , JSON.stringify(cart), (err, results)=>{
+                if (err) throw err
+                res.json({
+                    status: 200,
+                    results: 'Product successfully added onto cart'
+                })
+            })
+        } else {
+            res.json({
+                status: 404,
+                results: 'There is no user with that id'
+            })
+        }
     })
 })
