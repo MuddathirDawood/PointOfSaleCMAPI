@@ -398,3 +398,9 @@ router.delete('/users/:id/cart/:cartId', (req,res)=>{
         })
 
 })
+
+module.exports = {
+    devServer: {
+        Proxy: '*'
+    }
+}
