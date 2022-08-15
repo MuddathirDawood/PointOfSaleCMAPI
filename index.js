@@ -124,7 +124,8 @@ router.post('/users', bodyParser.json(), async(req, res)=>{
             let generateSalt = await bcrypt.genSalt()
             req.body.password = await bcrypt.hash(req.body.password, generateSalt)
             let date = {
-                date: new Date().toLocaleDateString(),
+                // date: new Date().toLocaleDateString(),
+                date: new Date().toISOString().slice(0, 10)
               };
             bd.join_date = date.date;  
 
