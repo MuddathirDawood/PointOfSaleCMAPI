@@ -178,10 +178,14 @@ router.patch('/users', bodyParser.json(), (req, res)=>{
         if (err) throw err
 
         if (results.length === 0) {
-            res.send('Email Not Found. Please register')
+            res.json({
+              status: 404,  
+              msg: 'Email Not Found. Please register'})
         } else {
             if (await bcrypt.compare(req.body.password, results[0].password) == false) {
-                res.send('Password is Incorrect')
+                res.json({
+                  status: 404,
+                  msg: 'Password is Incorrect'})
             } else {
                 const payload = {
                     user: {
