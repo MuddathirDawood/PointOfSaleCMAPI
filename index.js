@@ -119,7 +119,10 @@ router.post('/users', bodyParser.json(), async(req, res)=>{
         if (err) throw err
         // VALIDATION
         if (results.length > 0) {
-            res.send("The provided email exists. Please enter another one")
+            res.json({
+                status: 400,
+                msg: "The provided email exists. Please enter another one"
+            })
         } else {
             let generateSalt = await bcrypt.genSalt()
             req.body.password = await bcrypt.hash(req.body.password, generateSalt)
@@ -136,7 +139,24 @@ router.post('/users', bodyParser.json(), async(req, res)=>{
         
             db.query(registerQ, [bd.user_fullname, bd.email, bd.password, bd.phone_number, bd.join_date], (err, results)=>{
                 if (err) throw err
-                res.send('Register Successful')
+                const payload = {
+                    user: {
+                        user_fullname: bd.user_fullname,
+                        email: bd.email,
+                        password: bd.password,
+                        phone_number: bd.phone_number,
+                        join_date: bd.join_date,
+                    }
+                };
+
+                jwt.sign(payload, process.env.jwtsecret, {expiresIn: "7d"}, (err, token)=>{
+                    if (err) throw err
+                    res.json({
+                        status: 200,
+                        msg: 'Registration Successful',
+                        token: token
+                    })
+                })
             })
             
         }
